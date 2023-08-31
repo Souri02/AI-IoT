@@ -1,19 +1,14 @@
-import socketio
+import asyncio
+import websockets
 
-sio = socketio.Client()
+async def send_message():
+    uri = "ws://139.59.95.113:5000"
+    async with websockets.connect(uri, timeout=10) as websocket:
+        message_to_send = input("Enter your message: ")
+        await websocket.send(message_to_send)
+        print("Message sent")
 
-@sio.on('connect')
-def on_connect():
-    print('Connected to server')
+        response = await websocket.recv()
+        print("Received response:", response)
 
-@sio.on('response')
-def on_response(data):
-    print(data['response'])
-    sio.disconnect()
-
-if __name__ == '__main__':
-    message_to_send = input("Enter your message: ")
-
-    sio.connect('http://localhost:8888')
-    sio.emit('send_message', {'message': message_to_send})
-    sio.wait()
+asyncio.get_event_loop().run_until_complete(send_message())
