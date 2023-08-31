@@ -1,18 +1,13 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
+import asyncio
+import websockets
 
-app = Flask(__name__)
-socketio = SocketIO(app)
+async def handle_connection(websocket, path):
+    async for message in websocket:
+        print("Received message:", message)
+        response = "Message received successfully!"
+        await websocket.send(response)
 
-@app.route('/')
-def index():
-    return "Server is running"
+start_server = websockets.serve(handle_connection, "localhost", 5000)
 
-@socketio.on('send_message')
-def handle_message(data):
-    message = data['message']
-    print("Received message:", message)
-    emit('response', {'response': 'Message received successfully!'})
-
-if __name__ == '__main__':
-    socketio.run(app, debug=True,port=8888)
+asyncio.get_event_loop().run_until_complete(start_server)
+asyncio.get_event_loop().run_forever()
